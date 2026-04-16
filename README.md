@@ -2,7 +2,7 @@
 
 > **Enterprise-grade economic analytics platform** — Real-time data pipeline, AWS Data Lake, R Shiny backend, and an interactive dashboard with live KPIs, sector heatmaps, and Google Maps integration.
 
-![Dashboard Preview](https://economicinsights-dashboard.netlify.app/)
+[Dashboard Preview](https://economicinsights-dashboard.netlify.app/)
 
 ---
 
