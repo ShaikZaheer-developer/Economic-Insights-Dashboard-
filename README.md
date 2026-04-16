@@ -152,7 +152,7 @@ aws lambda create-function \
 ## 📸 Dashboard Screenshots
 
 <p align="center">
-  <img src="screenshots/1.png" width="950">
+  <img src="screenshots/4.png" width="950">
 </p>
 
 <p align="center">
@@ -161,7 +161,7 @@ aws lambda create-function \
 </p>
 
 <p align="center">
-  <img src="screenshots/4.png" width="950">
+  <img src="screenshots/1.png" width="950">
 </p>
 
 ---
