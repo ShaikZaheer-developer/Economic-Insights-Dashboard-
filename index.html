@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EconPulse — Global Economic Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════ */
+:root {
+  --bg:         #080c14;
+  --bg1:        #0d1320;
+  --bg2:        #111827;
+  --bg3:        #1a2236;
+  --border:     rgba(255,255,255,.07);
+  --border2:    rgba(99,202,183,.15);
+  --accent:     #63cab7;
+  --accent2:    #f5a623;
+  --accent3:    #e05c5c;
+  --accent4:    #7b8ef8;
+  --text:       #e8edf5;
+  --text2:      #8899b4;
+  --text3:      #4a5568;
+  --green:      #3ecf8e;
+  --red:        #e05c5c;
+  --font-head:  'Syne', sans-serif;
+  --font-mono:  'IBM Plex Mono', monospace;
+  --font-body:  'Manrope', sans-serif;
+  --r:          12px;
+  --r2:         20px;
+  --shadow:     0 4px 24px rgba(0,0,0,.5);
+  --glow:       0 0 24px rgba(99,202,183,.12);
+}
+
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ── Background grain ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.4;
+}
+
+/* ════════════════════════════════════════════
+   LAYOUT
+════════════════════════════════════════════ */
+.shell { display:flex; min-height:100vh; position:relative; z-index:1; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 240px; flex-shrink:0;
+  background: var(--bg1);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction:column;
+  position: sticky; top:0; height:100vh;
+  overflow: hidden;
+}
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.logo-mark {
+  display:flex; align-items:center; gap:10px;
+  font-family: var(--font-head);
+  font-size: 20px; font-weight:800;
+  letter-spacing:-0.5px;
+}
+.logo-icon {
+  width:34px; height:34px; border-radius:8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent4));
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px;
+}
+.logo-sub {
+  font-size:10px; font-family:var(--font-mono);
+  color:var(--text2); letter-spacing:1px;
+  text-transform:uppercase; margin-top:2px;
+}
+.sidebar-live {
+  display:flex; align-items:center; gap:6px;
+  padding:8px 20px;
+  font-size:10px; font-family:var(--font-mono);
+  color:var(--green); letter-spacing:1px;
+  background: rgba(62,207,142,.06);
+  border-bottom: 1px solid var(--border);
+}
+.live-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--green);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.3)} }
+
+.sidebar-nav { flex:1; padding:12px 0; overflow-y:auto; }
+.nav-section {
+  font-size:9px; font-family:var(--font-mono);
+  color:var(--text3); letter-spacing:2px;
+  text-transform:uppercase;
+  padding: 12px 20px 4px;
+}
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding: 10px 20px;
+  cursor:pointer; transition:all .2s;
+  border-left: 2px solid transparent;
+  color: var(--text2); font-weight:500;
+}
+.nav-item:hover { color:var(--text); background:rgba(255,255,255,.03); }
+.nav-item.active {
+  color:var(--accent); background:rgba(99,202,183,.06);
+  border-left-color: var(--accent);
+}
+.nav-icon { font-size:16px; width:20px; text-align:center; }
+
+.sidebar-footer {
+  padding:16px 20px;
+  border-top: 1px solid var(--border);
+  font-size:11px; color:var(--text3);
+  font-family:var(--font-mono);
+}
+.status-row {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:6px;
+}
+.status-ok { color:var(--green); }
+.status-ts { color:var(--text3); font-size:10px; }
+
+/* ── Main Content ── */
+.main { flex:1; overflow-y:auto; }
+
+/* ── Topbar ── */
+.topbar {
+  position:sticky; top:0; z-index:100;
+  background: rgba(8,12,20,.9);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display:flex; align-items:center; justify-content:space-between;
+  height:60px;
+}
+.topbar-title {
+  font-family:var(--font-head);
+  font-size:18px; font-weight:700;
+}
+.topbar-title span { color:var(--accent); }
+.topbar-controls { display:flex; align-items:center; gap:12px; }
+.btn {
+  padding:6px 14px; border-radius:6px; border:none;
+  cursor:pointer; font-size:12px; font-weight:600;
+  transition:all .2s; letter-spacing:.3px;
+}
+.btn-ghost {
+  background:transparent; color:var(--text2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { color:var(--text); border-color:var(--accent); }
+.btn-accent {
+  background: var(--accent); color: #0a1a18;
+}
+.btn-accent:hover { background:#7bd6c4; transform:translateY(-1px); }
+.country-select {
+  background:var(--bg2); border:1px solid var(--border);
+  color:var(--text); padding:6px 10px;
+  border-radius:6px; font-size:12px; cursor:pointer;
+}
+.country-select:focus { outline:none; border-color:var(--accent); }
+.year-range {
+  display:flex; align-items:center; gap:8px;
+  font-size:12px; color:var(--text2);
+}
+.year-range input[type=range] {
+  accent-color: var(--accent); width:80px;
+}
+
+/* ── Page / Sections ── */
+.page { display:none; padding:24px 28px; }
+.page.active { display:block; }
+
+/* ── Section Header ── */
+.section-header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:20px;
+}
+.section-title {
+  font-family:var(--font-head);
+  font-size:22px; font-weight:700;
+  letter-spacing:-0.5px;
+}
+.section-subtitle {
+  font-size:12px; color:var(--text2);
+  font-family:var(--font-mono);
+  margin-top:2px;
+}
+
+/* ── KPI Grid ── */
+.kpi-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap:16px;
+  margin-bottom:24px;
+}
+.kpi-card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  padding:20px;
+  position:relative; overflow:hidden;
+  cursor:default;
+  transition:transform .2s, box-shadow .2s, border-color .2s;
+}
+.kpi-card:hover {
+  transform:translateY(-2px);
+  box-shadow: var(--glow);
+  border-color: var(--border2);
+}
+.kpi-card::before {
+  content:'';
+  position:absolute; top:0; right:0;
+  width:80px; height:80px; border-radius:50%;
+  background:radial-gradient(circle, var(--card-color,.1) 0%, transparent 70%);
+  transform:translate(20px,-20px);
+}
+.kpi-card[data-color="green"]  { --card-color: rgba(62,207,142,.15); }
+.kpi-card[data-color="red"]    { --card-color: rgba(224,92,92,.15); }
+.kpi-card[data-color="amber"]  { --card-color: rgba(245,166,35,.15); }
+.kpi-card[data-color="blue"]   { --card-color: rgba(123,142,248,.15); }
+.kpi-card[data-color="teal"]   { --card-color: rgba(99,202,183,.15); }
+
+.kpi-label {
+  font-size:10px; font-family:var(--font-mono);
+  color:var(--text2); letter-spacing:1px;
+  text-transform:uppercase; margin-bottom:8px;
+}
+.kpi-value {
+  font-family:var(--font-head);
+  font-size:28px; font-weight:800;
+  letter-spacing:-1px; line-height:1;
+}
+.kpi-unit { font-size:14px; font-weight:500; color:var(--text2); }
+.kpi-change {
+  display:inline-flex; align-items:center; gap:3px;
+  margin-top:8px; padding:2px 8px;
+  border-radius:20px; font-size:11px;
+  font-family:var(--font-mono); font-weight:600;
+}
+.kpi-change.pos { background:rgba(62,207,142,.12); color:var(--green); }
+.kpi-change.neg { background:rgba(224,92,92,.12); color:var(--red); }
+.kpi-sparkline { margin-top:12px; height:32px; }
+
+/* ── Chart Grid ── */
+.chart-grid {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:16px; margin-bottom:24px;
+}
+.chart-grid-3 {
+  display:grid;
+  grid-template-columns: 2fr 1fr;
+  gap:16px; margin-bottom:24px;
+}
+.chart-card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  padding:20px;
+  position:relative; overflow:hidden;
+}
+.chart-card.full { grid-column:1/-1; }
+.chart-header {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  margin-bottom:16px;
+}
+.chart-title {
+  font-family:var(--font-head);
+  font-size:15px; font-weight:700;
+}
+.chart-meta { font-size:10px; color:var(--text2); font-family:var(--font-mono); }
+.chart-tabs {
+  display:flex; gap:4px;
+}
+.chart-tab {
+  padding:3px 10px; border-radius:4px;
+  font-size:11px; cursor:pointer;
+  border:1px solid var(--border); background:transparent;
+  color:var(--text2); transition:all .2s;
+}
+.chart-tab.active { background:var(--accent); color:#0a1a18; border-color:var(--accent); font-weight:600; }
+.chart-body { position:relative; }
+
+/* ── Map Container ── */
+#map {
+  width:100%; height:480px; border-radius:var(--r);
+  overflow:hidden;
+}
+.map-legend {
+  position:absolute; bottom:20px; left:20px;
+  background:rgba(13,19,32,.9); backdrop-filter:blur(8px);
+  border:1px solid var(--border);
+  border-radius:var(--r); padding:12px 16px;
+  font-size:11px;
+}
+.legend-title { font-family:var(--font-mono); color:var(--text2); margin-bottom:6px; font-size:10px; letter-spacing:1px; }
+.legend-items { display:flex; flex-direction:column; gap:4px; }
+.legend-item { display:flex; align-items:center; gap:8px; }
+.legend-dot { width:10px; height:10px; border-radius:50%; }
+
+/* ── Heatmap ── */
+.heatmap-grid {
+  display:grid;
+  gap:2px;
+  margin-top:8px;
+}
+.heatmap-cell {
+  border-radius:4px; padding:6px 4px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  font-size:10px; cursor:pointer; transition:all .2s;
+  position:relative;
+}
+.heatmap-cell:hover { transform:scale(1.05); z-index:10; }
+.heatmap-sector { font-family:var(--font-mono); font-size:9px; color:rgba(255,255,255,.6); margin-bottom:2px; }
+.heatmap-val { font-weight:700; font-size:11px; }
+.heatmap-labels {
+  display:flex; gap:2px; margin-bottom:4px;
+  font-size:9px; font-family:var(--font-mono); color:var(--text3);
+}
+
+/* ── Table ── */
+.data-table { width:100%; border-collapse:collapse; }
+.data-table th {
+  font-size:10px; font-family:var(--font-mono);
+  color:var(--text2); letter-spacing:1px; text-transform:uppercase;
+  padding:10px 12px; border-bottom:1px solid var(--border);
+  text-align:left; font-weight:500;
+}
+.data-table td {
+  padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.03);
+  font-size:13px;
+}
+.data-table tr:hover td { background:rgba(255,255,255,.02); }
+.table-flag { font-size:18px; margin-right:6px; }
+.rank-badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:22px; height:22px; border-radius:50%;
+  background:var(--bg3); font-size:10px;
+  font-family:var(--font-mono); font-weight:700;
+}
+.rank-badge.gold   { background:rgba(245,166,35,.2); color:var(--accent2); }
+.rank-badge.silver { background:rgba(180,180,180,.2); color:#b0b0b0; }
+.rank-badge.bronze { background:rgba(205,127,50,.2); color:#cd7f32; }
+
+/* ── Badge ── */
+.badge {
+  padding:2px 8px; border-radius:20px;
+  font-size:10px; font-family:var(--font-mono); font-weight:600;
+}
+.badge-green { background:rgba(62,207,142,.12); color:var(--green); }
+.badge-red   { background:rgba(224,92,92,.12);  color:var(--red); }
+.badge-amber { background:rgba(245,166,35,.12); color:var(--accent2); }
+.badge-blue  { background:rgba(123,142,248,.12);color:var(--accent4); }
+
+/* ── Timeline ── */
+.timeline-bar {
+  display:flex; gap:2px; margin-bottom:8px; align-items:flex-end;
+}
+.timeline-col { flex:1; display:flex; flex-direction:column; gap:2px; align-items:center; }
+.timeline-val { width:100%; border-radius:3px; min-height:4px; transition:height .3s; }
+.timeline-yr { font-size:9px; font-family:var(--font-mono); color:var(--text3); margin-top:2px; }
+
+/* ── Alert Banner ── */
+.alert-banner {
+  background: rgba(245,166,35,.08);
+  border: 1px solid rgba(245,166,35,.2);
+  border-radius:var(--r); padding:10px 16px;
+  display:flex; align-items:center; gap:10px;
+  margin-bottom:16px; font-size:12px; color:var(--accent2);
+}
+
+/* ── Pipeline Status ── */
+.pipeline-steps { display:flex; align-items:center; gap:0; margin:16px 0; }
+.p-step {
+  flex:1; text-align:center; position:relative;
+}
+.p-step-dot {
+  width:32px; height:32px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 6px; font-size:14px;
+  border:2px solid var(--border);
+}
+.p-step.done   .p-step-dot { background:rgba(62,207,142,.15); border-color:var(--green); }
+.p-step.active .p-step-dot { background:rgba(99,202,183,.15); border-color:var(--accent); animation:pulse 1.5s infinite; }
+.p-step.wait   .p-step-dot { background:var(--bg3); border-color:var(--border); color:var(--text3); }
+.p-step-label { font-size:10px; font-family:var(--font-mono); color:var(--text2); }
+.p-step-connector {
+  position:absolute; top:14px; left:50%; width:100%;
+  height:2px; background:var(--border); z-index:-1;
+}
+.p-step.done .p-step-connector { background:var(--green); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--bg3); border-radius:2px; }
+
+/* ── Loading Shimmer ── */
+.shimmer {
+  background: linear-gradient(90deg, var(--bg2) 25%, var(--bg3) 50%, var(--bg2) 75%);
+  background-size:200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius:4px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ── Tooltip ── */
+.tooltip-box {
+  position:absolute; z-index:1000;
+  background:var(--bg1); border:1px solid var(--border2);
+  border-radius:var(--r); padding:10px 14px;
+  font-size:12px; pointer-events:none;
+  box-shadow:var(--shadow); min-width:140px;
+  display:none;
+}
+
+/* ── Responsive ── */
+@media (max-width:1100px) {
+  .chart-grid, .chart-grid-3 { grid-template-columns:1fr; }
+}
+@media (max-width:768px) {
+  .sidebar { width:60px; }
+  .sidebar .logo-mark span, .sidebar .logo-sub,
+  .sidebar .nav-item span, .sidebar .sidebar-footer,
+  .sidebar .nav-section { display:none; }
+  .nav-item { justify-content:center; padding:12px; }
+  .kpi-grid { grid-template-columns:1fr 1fr; }
+  .topbar { padding:0 16px; }
+  .page { padding:16px; }
+}
+
+/* ── Animations ── */
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.fade-in { animation:fadeInUp .4s ease both; }
+.fade-in-1 { animation-delay:.05s; }
+.fade-in-2 { animation-delay:.1s; }
+.fade-in-3 { animation-delay:.15s; }
+.fade-in-4 { animation-delay:.2s; }
+.fade-in-5 { animation-delay:.25s; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+<!-- ══════════════════════════════════
+     SIDEBAR
+══════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">📊</div>
+      <div>
+        <div>EconPulse</div>
+        <div class="logo-sub">Intelligence Platform</div>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-live">
+    <div class="live-dot"></div>
+    LIVE DATA · 30s REFRESH
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Analytics</div>
+    <div class="nav-item active" onclick="navigate('overview')">
+      <span class="nav-icon">⚡</span><span>Overview</span>
+    </div>
+    <div class="nav-item" onclick="navigate('gdp')">
+      <span class="nav-icon">📈</span><span>GDP & Growth</span>
+    </div>
+    <div class="nav-item" onclick="navigate('markets')">
+      <span class="nav-icon">💹</span><span>Sector Markets</span>
+    </div>
+    <div class="nav-item" onclick="navigate('trade')">
+      <span class="nav-icon">🌐</span><span>Trade Flows</span>
+    </div>
+    <div class="nav-section">Intelligence</div>
+    <div class="nav-item" onclick="navigate('map')">
+      <span class="nav-icon">🗺️</span><span>World Map</span>
+    </div>
+    <div class="nav-item" onclick="navigate('compare')">
+      <span class="nav-icon">⚖️</span><span>Country Compare</span>
+    </div>
+    <div class="nav-section">Infrastructure</div>
+    <div class="nav-item" onclick="navigate('pipeline')">
+      <span class="nav-icon">🔧</span><span>Data Pipeline</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="status-row">
+      <span>DB Status</span>
+      <span class="status-ok" id="db-status">● Connected</span>
+    </div>
+    <div class="status-row">
+      <span>Last Refresh</span>
+      <span class="status-ts" id="last-refresh">--:--:--</span>
+    </div>
+    <div class="status-row">
+      <span>Mode</span>
+      <span id="data-mode" style="color:var(--accent2);font-size:10px">DEMO</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ══════════════════════════════════
+     MAIN
+══════════════════════════════════ -->
+<div class="main">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div>
+      <div class="topbar-title">Global <span>Economic</span> Intelligence</div>
+    </div>
+    <div class="topbar-controls">
+      <select class="country-select" id="focus-country" onchange="onCountryChange()">
+        <option value="USA">🇺🇸 United States</option>
+        <option value="CHN">🇨🇳 China</option>
+        <option value="IND">🇮🇳 India</option>
+        <option value="DEU">🇩🇪 Germany</option>
+        <option value="GBR">🇬🇧 United Kingdom</option>
+        <option value="JPN">🇯🇵 Japan</option>
+        <option value="BRA">🇧🇷 Brazil</option>
+        <option value="CAN">🇨🇦 Canada</option>
+      </select>
+      <div class="year-range">
+        <span style="color:var(--text3);font-size:10px;font-family:var(--font-mono)">FROM</span>
+        <input type="range" id="year-from" min="2010" max="2023" value="2015" oninput="onYearChange(this.value)"/>
+        <span id="year-label" style="font-family:var(--font-mono);color:var(--accent)">2015</span>
+      </div>
+      <button class="btn btn-ghost" onclick="exportData()">⬇ Export</button>
+      <button class="btn btn-accent" onclick="refreshNow()">↻ Refresh</button>
+    </div>
+  </header>
+
+  <!-- ══ PAGE: OVERVIEW ══ -->
+  <section class="page active" id="page-overview">
+    <div class="section-header fade-in">
+      <div>
+        <div class="section-title">Economic Overview</div>
+        <div class="section-subtitle">REAL-TIME GLOBAL INDICATORS · WORLD BANK + FRED</div>
+      </div>
+    </div>
+
+    <div class="alert-banner fade-in fade-in-1" id="demo-banner">
+      ⚡ Running in demo mode with realistic mock data. Connect PostgreSQL/Redshift to enable live DB feeds.
+      <span style="margin-left:auto;cursor:pointer;color:var(--text3)" onclick="this.parentElement.style.display='none'">✕</span>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card fade-in fade-in-1" data-color="green">
+        <div class="kpi-label">GDP (USD)</div>
+        <div class="kpi-value" id="kpi-gdp">$27.4<span class="kpi-unit">T</span></div>
+        <div class="kpi-change pos" id="kpi-gdp-chg">▲ +2.5%</div>
+        <canvas class="kpi-sparkline" id="spark-gdp"></canvas>
+      </div>
+      <div class="kpi-card fade-in fade-in-2" data-color="teal">
+        <div class="kpi-label">GDP Growth Rate</div>
+        <div class="kpi-value" id="kpi-growth">2.5<span class="kpi-unit">%</span></div>
+        <div class="kpi-change pos" id="kpi-growth-chg">▲ +0.3pp</div>
+        <canvas class="kpi-sparkline" id="spark-growth"></canvas>
+      </div>
+      <div class="kpi-card fade-in fade-in-3" data-color="amber">
+        <div class="kpi-label">Inflation (CPI)</div>
+        <div class="kpi-value" id="kpi-inflation">3.1<span class="kpi-unit">%</span></div>
+        <div class="kpi-change neg" id="kpi-inflation-chg">▼ −0.8pp</div>
+        <canvas class="kpi-sparkline" id="spark-inflation"></canvas>
+      </div>
+      <div class="kpi-card fade-in fade-in-4" data-color="blue">
+        <div class="kpi-label">Unemployment</div>
+        <div class="kpi-value" id="kpi-unemployment">3.9<span class="kpi-unit">%</span></div>
+        <div class="kpi-change pos" id="kpi-unemp-chg">▼ −0.2pp</div>
+        <canvas class="kpi-sparkline" id="spark-unemp"></canvas>
+      </div>
+      <div class="kpi-card fade-in fade-in-5" data-color="red">
+        <div class="kpi-label">Trade Balance</div>
+        <div class="kpi-value" id="kpi-trade">−$773<span class="kpi-unit">B</span></div>
+        <div class="kpi-change pos" id="kpi-trade-chg">▲ +12.1%</div>
+        <canvas class="kpi-sparkline" id="spark-trade"></canvas>
+      </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="chart-grid">
+      <div class="chart-card fade-in">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">GDP Trend — Top Economies</div>
+            <div class="chart-meta">USD TRILLION · 2015–2024</div>
+          </div>
+          <div class="chart-tabs">
+            <button class="chart-tab active" onclick="switchGDPView('line',this)">Line</button>
+            <button class="chart-tab" onclick="switchGDPView('bar',this)">Bar</button>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="gdp-chart" height="220"></canvas></div>
+      </div>
+      <div class="chart-card fade-in">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Macro Indicators Radar</div>
+            <div class="chart-meta">NORMALIZED 0–100 · LATEST YEAR</div>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="radar-chart" height="220"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="chart-grid">
+      <div class="chart-card fade-in">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Inflation vs Interest Rate</div>
+            <div class="chart-meta">SCATTER ANALYSIS · G20 COUNTRIES</div>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="scatter-chart" height="220"></canvas></div>
+      </div>
+      <div class="chart-card fade-in">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">GDP Share Distribution</div>
+            <div class="chart-meta">% OF WORLD GDP · 2024</div>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="gdp-donut" height="220"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ PAGE: GDP ══ -->
+  <section class="page" id="page-gdp">
+    <div class="section-header">
+      <div>
+        <div class="section-title">GDP & Growth Analysis</div>
+        <div class="section-subtitle">WORLD BANK DATA · ANNUAL · 2010–2024</div>
+      </div>
+    </div>
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-header">
+        <div class="chart-title">GDP Growth Rate — Multi-Country</div>
+        <div class="chart-tabs">
+          <button class="chart-tab active" onclick="switchGrowthMetric('growth',this)">Growth %</button>
+          <button class="chart-tab" onclick="switchGrowthMetric('gdp',this)">GDP Value</button>
+        </div>
+      </div>
+      <canvas id="growth-chart" height="300"></canvas>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-header"><div class="chart-title">5-Year Rolling Average</div></div>
+        <canvas id="rolling-chart" height="220"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header"><div class="chart-title">GDP per Capita Rankings</div></div>
+        <canvas id="percapita-chart" height="220"></canvas>
+      </div>
+    </div>
+
+    <!-- Country Rankings Table -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Country Rankings — Latest Year</div>
+        <div class="chart-meta">WORLD BANK 2024 DATA</div>
+      </div>
+      <table class="data-table" id="rankings-table">
+        <thead>
+          <tr>
+            <th>Rank</th><th>Country</th><th>Region</th>
+            <th>GDP (USD T)</th><th>Growth %</th>
+            <th>Inflation %</th><th>Unemployment %</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="rankings-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══ PAGE: MARKETS ══ -->
+  <section class="page" id="page-markets">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Sector Market Performance</div>
+        <div class="section-subtitle">GICS SECTORS · QUARTERLY RETURNS</div>
+      </div>
+    </div>
+    <div class="chart-grid-3">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Sector Heatmap</div>
+          <div class="chart-meta">QUARTERLY RETURNS % · 2020–2024</div>
+        </div>
+        <div id="heatmap-container"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header"><div class="chart-title">Best vs Worst Sectors</div></div>
+        <canvas id="sector-bar" height="320"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Sector Performance Over Time</div>
+      </div>
+      <canvas id="sector-line" height="240"></canvas>
+    </div>
+  </section>
+
+  <!-- ══ PAGE: TRADE ══ -->
+  <section class="page" id="page-trade">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Global Trade Flows</div>
+        <div class="section-subtitle">BILATERAL TRADE · USD BILLION</div>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-header"><div class="chart-title">Top Trade Partners</div></div>
+        <canvas id="trade-bar" height="280"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header"><div class="chart-title">Trade by Sector</div></div>
+        <canvas id="trade-sector-donut" height="280"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div class="chart-title">Exports vs Imports by Country</div></div>
+      <canvas id="trade-compare" height="240"></canvas>
+    </div>
+  </section>
+
+  <!-- ══ PAGE: MAP ══ -->
+  <section class="page" id="page-map">
+    <div class="section-header">
+      <div>
+        <div class="section-title">World Economic Map</div>
+        <div class="section-subtitle">GOOGLE MAPS · CLICK COUNTRY FOR DETAILS</div>
+      </div>
+      <select class="country-select" id="map-metric" onchange="updateMapMetric()">
+        <option value="gdp">GDP (USD B)</option>
+        <option value="gdp_growth">GDP Growth %</option>
+        <option value="inflation">Inflation %</option>
+        <option value="unemployment">Unemployment %</option>
+      </select>
+    </div>
+    <div class="chart-card" style="position:relative;padding:0;overflow:hidden">
+      <div id="map"></div>
+      <div class="map-legend">
+        <div class="legend-title">GDP SIZE</div>
+        <div class="legend-items">
+          <div class="legend-item"><div class="legend-dot" style="background:#63cab7;width:20px;height:20px;opacity:.9"></div><span>$10T+</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#63cab7;width:14px;height:14px;opacity:.7"></div><span>$2T–10T</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#63cab7;width:9px;height:9px;opacity:.5"></div><span>&lt;$2T</span></div>
+        </div>
+      </div>
+    </div>
+    <div id="map-info-panel" style="display:none;margin-top:16px">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title" id="map-country-title">Country Details</div>
+        </div>
+        <div id="map-country-detail"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ PAGE: COMPARE ══ -->
+  <section class="page" id="page-compare">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Country Comparison</div>
+        <div class="section-subtitle">SIDE-BY-SIDE MULTI-INDICATOR ANALYSIS</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+      <select class="country-select" id="cmp-a" onchange="updateCompare()">
+        <option value="USA">🇺🇸 United States</option>
+        <option value="CHN">🇨🇳 China</option>
+        <option value="IND" selected>🇮🇳 India</option>
+        <option value="DEU">🇩🇪 Germany</option>
+      </select>
+      <div style="display:flex;align-items:center;font-size:18px;color:var(--text2)">⚔️</div>
+      <select class="country-select" id="cmp-b" onchange="updateCompare()">
+        <option value="USA">🇺🇸 United States</option>
+        <option value="CHN" selected>🇨🇳 China</option>
+        <option value="IND">🇮🇳 India</option>
+        <option value="DEU">🇩🇪 Germany</option>
+      </select>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-header"><div class="chart-title">Head-to-Head Radar</div></div>
+        <canvas id="compare-radar" height="280"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header"><div class="chart-title">KPI Comparison</div></div>
+        <div id="compare-kpis"></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div class="chart-title">GDP Trend Comparison</div></div>
+      <canvas id="compare-gdp" height="240"></canvas>
+    </div>
+  </section>
+
+  <!-- ══ PAGE: PIPELINE ══ -->
+  <section class="page" id="page-pipeline">
+    <div class="section-header">
+      <div>
+        <div class="section-title">AWS Data Pipeline</div>
+        <div class="section-subtitle">END-TO-END ORCHESTRATION STATUS</div>
+      </div>
+      <button class="btn btn-accent" onclick="triggerPipeline()">▶ Trigger Run</button>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title" style="margin-bottom:20px">Pipeline Architecture</div>
+      <div class="pipeline-steps">
+        <div class="p-step done">
+          <div class="p-step-dot">📥</div>
+          <div class="p-step-label">World Bank API</div>
+          <div class="p-step-connector"></div>
+        </div>
+        <div class="p-step done">
+          <div class="p-step-dot">🪣</div>
+          <div class="p-step-label">S3 Raw Zone</div>
+          <div class="p-step-connector"></div>
+        </div>
+        <div class="p-step done">
+          <div class="p-step-dot">⚡</div>
+          <div class="p-step-label">AWS Glue ETL</div>
+          <div class="p-step-connector"></div>
+        </div>
+        <div class="p-step active">
+          <div class="p-step-dot">🔥</div>
+          <div class="p-step-label">Spark EMR</div>
+          <div class="p-step-connector"></div>
+        </div>
+        <div class="p-step wait">
+          <div class="p-step-dot">🏛️</div>
+          <div class="p-step-label">Redshift DWH</div>
+          <div class="p-step-connector"></div>
+        </div>
+        <div class="p-step wait">
+          <div class="p-step-dot">📊</div>
+          <div class="p-step-label">Dashboard</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="margin-bottom:12px">Run History</div>
+        <table class="data-table">
+          <thead><tr><th>Run ID</th><th>Started</th><th>Records</th><th>Status</th><th>Duration</th></tr></thead>
+          <tbody id="pipeline-runs"></tbody>
+        </table>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="margin-bottom:12px">Schema: Star Model</div>
+        <div style="font-family:var(--font-mono);font-size:11px;line-height:2;color:var(--text2)">
+          <div style="color:var(--accent);font-weight:700">FACT TABLES</div>
+          <div>├── fact_economic_indicators</div>
+          <div>├── fact_trade_flows</div>
+          <div>└── fact_market_data</div>
+          <br>
+          <div style="color:var(--accent4);font-weight:700">DIMENSION TABLES</div>
+          <div>├── dim_date (2015–2030)</div>
+          <div>├── dim_country (20 G20+)</div>
+          <div>├── dim_indicator (14 KPIs)</div>
+          <div>├── dim_sector (11 GICS)</div>
+          <div>└── dim_source</div>
+          <br>
+          <div style="color:var(--accent2);font-weight:700">STAGING</div>
+          <div>└── stg_raw_indicators</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Records Processed Over Time</div>
+      </div>
+      <canvas id="pipeline-chart" height="200"></canvas>
+    </div>
+  </section>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ══════════════════════════════════
+     GOOGLE MAPS CALLBACK
+══════════════════════════════════ -->
+<div id="tooltip-box" class="tooltip-box"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════════ */
+const STATE = {
+  currentPage: 'overview',
+  focusCountry: 'USA',
+  yearFrom: 2015,
+  mapMetric: 'gdp',
+  charts: {},
+  data: {
+    kpis: null, gdpTrend: null, sectors: null, countries: null, trade: null
+  },
+  refreshInterval: null,
+  map: null,
+  markers: [],
+};
+
+/* ════════════════════════════════════════════════════════
+   COLOUR PALETTE
+════════════════════════════════════════════════════════ */
+const PALETTE = [
+  '#63cab7','#7b8ef8','#f5a623','#e05c5c','#3ecf8e',
+  '#a78bfa','#fb923c','#34d399','#f472b6','#60a5fa'
+];
+const FLAGS = {
+  USA:'🇺🇸',CHN:'🇨🇳',IND:'🇮🇳',DEU:'🇩🇪',GBR:'🇬🇧',JPN:'🇯🇵',
+  FRA:'🇫🇷',BRA:'🇧🇷',CAN:'🇨🇦',AUS:'🇦🇺',KOR:'🇰🇷',MEX:'🇲🇽',
+  IDN:'🇮🇩',SAU:'🇸🇦',ZAF:'🇿🇦',RUS:'🇷🇺',TUR:'🇹🇷',ARG:'🇦🇷',
+  SGP:'🇸🇬',NLD:'🇳🇱'
+};
+
+/* ════════════════════════════════════════════════════════
+   MOCK DATA ENGINE  (replaces Shiny WebSocket in demo)
+════════════════════════════════════════════════════════ */
+function generateMockData() {
+  const years = Array.from({length:10},(_,i)=>2015+i);
+  const countries = [
+    {code:'USA',name:'United States',  region:'Americas', base:18e3, emoji:'🇺🇸'},
+    {code:'CHN',name:'China',          region:'Asia',     base:11e3, emoji:'🇨🇳'},
+    {code:'IND',name:'India',          region:'Asia',     base:2.1e3,emoji:'🇮🇳'},
+    {code:'DEU',name:'Germany',        region:'Europe',   base:3.4e3,emoji:'🇩🇪'},
+    {code:'GBR',name:'United Kingdom', region:'Europe',   base:2.9e3,emoji:'🇬🇧'},
+    {code:'JPN',name:'Japan',          region:'Asia',     base:4.2e3,emoji:'🇯🇵'},
+    {code:'FRA',name:'France',         region:'Europe',   base:2.8e3,emoji:'🇫🇷'},
+    {code:'BRA',name:'Brazil',         region:'Americas', base:1.8e3,emoji:'🇧🇷'},
+    {code:'CAN',name:'Canada',         region:'Americas', base:2.0e3,emoji:'🇨🇦'},
+    {code:'AUS',name:'Australia',      region:'Oceania',  base:1.5e3,emoji:'🇦🇺'},
+  ];
+  const sectors = [
+    'Information Technology','Financials','Health Care',
+    'Consumer Discretionary','Industrials','Consumer Staples',
+    'Energy','Materials','Utilities','Communication Services','Real Estate'
+  ];
+
+  // GDP trend data
+  const gdpTrend = {};
+  countries.forEach(c => {
+    gdpTrend[c.code] = {
+      ...c,
+      years,
+      gdp:    years.map((_,i) => +(c.base * Math.pow(1+(.02+Math.random()*.04),i)/1e3).toFixed(2)),
+      growth: years.map(() => +(1 + Math.random()*6 - 1).toFixed(2)),
+    };
+  });
+
+  // Sector heatmap
+  const sectorData = {};
+  sectors.forEach(s => {
+    sectorData[s] = {
+      quarterly: []
+    };
+    ['2020','2021','2022','2023','2024'].forEach(yr => {
+      [1,2,3,4].forEach(q => {
+        sectorData[s].quarterly.push({
+          year:yr, quarter:q,
+          return: +(Math.random()*30-10).toFixed(2)
+        });
+      });
+    });
+  });
+
+  // Country map
+  const countryMap = [
+    {code:'USA',name:'United States',  lat:37.09, lng:-95.71, region:'Americas', gdp:27360,gdp_growth:2.5, inflation:3.1,unemployment:3.9},
+    {code:'CHN',name:'China',          lat:35.86, lng:104.19, region:'Asia',     gdp:17960,gdp_growth:5.2, inflation:0.7,unemployment:5.2},
+    {code:'IND',name:'India',          lat:20.59, lng:78.96,  region:'Asia',     gdp:3740, gdp_growth:6.8, inflation:5.4,unemployment:7.9},
+    {code:'DEU',name:'Germany',        lat:51.17, lng:10.45,  region:'Europe',   gdp:4430, gdp_growth:0.1, inflation:3.0,unemployment:3.0},
+    {code:'GBR',name:'United Kingdom', lat:55.38, lng:-3.44,  region:'Europe',   gdp:3020, gdp_growth:0.4, inflation:4.0,unemployment:4.2},
+    {code:'JPN',name:'Japan',          lat:36.20, lng:138.25, region:'Asia',     gdp:4210, gdp_growth:2.0, inflation:2.8,unemployment:2.6},
+    {code:'FRA',name:'France',         lat:46.23, lng:2.21,   region:'Europe',   gdp:2920, gdp_growth:1.1, inflation:4.9,unemployment:7.3},
+    {code:'BRA',name:'Brazil',         lat:-14.24,lng:-51.93, region:'Americas', gdp:2130, gdp_growth:3.0, inflation:5.1,unemployment:7.9},
+    {code:'CAN',name:'Canada',         lat:56.13, lng:-106.35,region:'Americas', gdp:2140, gdp_growth:1.4, inflation:2.7,unemployment:5.8},
+    {code:'AUS',name:'Australia',      lat:-25.27,lng:133.78, region:'Oceania',  gdp:1690, gdp_growth:2.0, inflation:3.4,unemployment:3.7},
+    {code:'KOR',name:'South Korea',    lat:35.91, lng:127.77, region:'Asia',     gdp:1710, gdp_growth:1.4, inflation:2.3,unemployment:2.7},
+    {code:'MEX',name:'Mexico',         lat:23.63, lng:-102.55,region:'Americas', gdp:1320, gdp_growth:2.5, inflation:5.5,unemployment:2.9},
+    {code:'IDN',name:'Indonesia',      lat:-0.79, lng:113.92, region:'Asia',     gdp:1370, gdp_growth:5.0, inflation:3.7,unemployment:5.3},
+    {code:'SAU',name:'Saudi Arabia',   lat:23.88, lng:45.08,  region:'Asia',     gdp:1060, gdp_growth:4.2, inflation:2.1,unemployment:4.4},
+    {code:'ZAF',name:'South Africa',   lat:-30.56,lng:22.94,  region:'Africa',   gdp:390,  gdp_growth:0.6, inflation:5.9,unemployment:32.1},
+  ];
+
+  return {gdpTrend, sectorData, sectors, countries, countryMap};
+}
+
+const MOCK = generateMockData();
+
+/* ════════════════════════════════════════════════════════
+   CHART.JS DEFAULTS
+════════════════════════════════════════════════════════ */
+Chart.defaults.color = '#8899b4';
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.font.size   = 11;
+
+function gridOpts(alpha=.06) {
+  return { color:`rgba(255,255,255,${alpha})`, drawBorder:false };
+}
+function tooltipOpts() {
+  return {
+    backgroundColor:'#0d1320',
+    borderColor:'rgba(99,202,183,.3)',
+    borderWidth:1,
+    titleColor:'#e8edf5',
+    bodyColor:'#8899b4',
+    padding:10,
+    cornerRadius:8,
+  };
+}
+
+/* ════════════════════════════════════════════════════════
+   SPARKLINES
+════════════════════════════════════════════════════════ */
+function makeSparkline(id, data, color) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: data.map((_,i)=>i),
+      datasets:[{data, borderColor:color, borderWidth:2,
+                 fill:true, backgroundColor:color+'22',
+                 pointRadius:0, tension:.4}]
+    },
+    options:{responsive:true, animation:false,
+      plugins:{legend:{display:false}, tooltip:{enabled:false}},
+      scales:{x:{display:false}, y:{display:false}}
+    }
+  });
+}
+
+/* ════════════════════════════════════════════════════════
+   PAGE: OVERVIEW — CHARTS
+════════════════════════════════════════════════════════ */
+function buildOverviewCharts() {
+  buildGDPChart();
+  buildRadarChart();
+  buildScatterChart();
+  buildDonutChart();
+  buildSparklines();
+}
+
+function buildGDPChart(type='line') {
+  const ctx = document.getElementById('gdp-chart');
+  if (!ctx) return;
+  if (STATE.charts['gdp']) STATE.charts['gdp'].destroy();
+
+  const countries = ['USA','CHN','IND','DEU','GBR'];
+  const datasets  = countries.map((code,i) => {
+    const d = MOCK.gdpTrend[code];
+    return {
+      label: d.name,
+      data: d.gdp,
+      borderColor: PALETTE[i],
+      backgroundColor: type==='bar' ? PALETTE[i]+'88' : PALETTE[i]+'22',
+      borderWidth:2, tension:.4,
+      pointRadius: type==='line' ? 3 : 0,
+      fill: type==='line' && i===0,
+    };
+  });
+
+  STATE.charts['gdp'] = new Chart(ctx, {
+    type,
+    data: { labels: MOCK.gdpTrend['USA'].years, datasets },
+    options: {
+      responsive:true, interaction:{mode:'index',intersect:false},
+      plugins: {
+        legend: {position:'bottom', labels:{boxWidth:10, padding:16}},
+        tooltip: tooltipOpts()
+      },
+      scales: {
+        x: { grid:gridOpts(), ticks:{maxTicksLimit:6} },
+        y: {
+          grid:gridOpts(),
+          ticks:{ callback:v=>`$${v}T` },
+          title:{display:true, text:'USD Trillion', color:'#4a5568'}
+        }
+      }
+    }
+  });
+}
+
+function buildRadarChart() {
+  const ctx = document.getElementById('radar-chart');
+  if (!ctx) return;
+  if (STATE.charts['radar']) STATE.charts['radar'].destroy();
+
+  const countries = ['USA','CHN','IND','DEU'];
+  const labels    = ['GDP Size','Growth Rate','Stability','Innovation','Trade','Employment'];
+
+  const datasets = countries.map((code,i) => {
+    const d = MOCK.countryMap?.find(c=>c.code===code) || {};
+    const vals = [
+      Math.min(100, (MOCK.gdpTrend[code].gdp.slice(-1)[0] / 30 * 100)),
+      Math.min(100, (MOCK.gdpTrend[code].growth.slice(-1)[0] + 5) * 10),
+      Math.max(0, 100 - (d.inflation||3) * 10),
+      40 + Math.random()*40,
+      50 + Math.random()*40,
+      Math.max(0, 100 - (d.unemployment||5) * 3),
+    ].map(v=>+v.toFixed(1));
+    return {
+      label: FLAGS[code]||'' + code,
+      data: vals,
+      borderColor: PALETTE[i],
+      backgroundColor: PALETTE[i]+'22',
+      borderWidth:2, pointRadius:3,
+      pointBackgroundColor: PALETTE[i],
+    };
+  });
+
+  STATE.charts['radar'] = new Chart(ctx, {
+    type:'radar',
+    data:{ labels, datasets },
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'bottom', labels:{boxWidth:10,padding:12}}, tooltip:tooltipOpts()},
+      scales:{r:{grid:{color:'rgba(255,255,255,.08)'}, pointLabels:{color:'#8899b4', font:{size:10}},
+                  ticks:{display:false}, angleLines:{color:'rgba(255,255,255,.05)'}}}
+    }
+  });
+}
+
+function buildScatterChart() {
+  const ctx = document.getElementById('scatter-chart');
+  if (!ctx) return;
+  if (STATE.charts['scatter']) STATE.charts['scatter'].destroy();
+
+  const data = MOCK.countryMap.map((c,i) => ({
+    x: +(c.inflation).toFixed(1),
+    y: +(c.gdp_growth).toFixed(1),
+    label: c.code,
+    r: Math.max(6, Math.sqrt(c.gdp/100)),
+  }));
+
+  STATE.charts['scatter'] = new Chart(ctx, {
+    type:'bubble',
+    data:{
+      datasets:[{
+        data,
+        backgroundColor: data.map((_,i)=>PALETTE[i%PALETTE.length]+'99'),
+        borderColor:     data.map((_,i)=>PALETTE[i%PALETTE.length]),
+        borderWidth:1,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          ...tooltipOpts(),
+          callbacks:{
+            label:(ctx)=>{
+              const d = ctx.raw;
+              return `${d.label}: Infl ${d.x}% | Growth ${d.y}%`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{grid:gridOpts(), title:{display:true,text:'Inflation %',color:'#4a5568'}},
+        y:{grid:gridOpts(), title:{display:true,text:'GDP Growth %',color:'#4a5568'}}
+      }
+    }
+  });
+}
+
+function buildDonutChart() {
+  const ctx = document.getElementById('gdp-donut');
+  if (!ctx) return;
+  if (STATE.charts['donut']) STATE.charts['donut'].destroy();
+
+  const countries = MOCK.countryMap.slice(0,8);
+  const totalGDP  = MOCK.countryMap.reduce((a,c)=>a+c.gdp, 0);
+  const restGDP   = totalGDP - countries.reduce((a,c)=>a+c.gdp,0);
+
+  STATE.charts['donut'] = new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      labels: [...countries.map(c=>`${FLAGS[c.code]||''} ${c.code}`), 'Others'],
+      datasets:[{
+        data:  [...countries.map(c=>+(c.gdp/totalGDP*100).toFixed(2)), +(restGDP/totalGDP*100).toFixed(2)],
+        backgroundColor: [...PALETTE.slice(0,8), '#2a3450'],
+        borderColor: 'rgba(0,0,0,.3)',
+        borderWidth:2,
+        hoverOffset:6,
+      }]
+    },
+    options:{
+      responsive:true, cutout:'65%',
+      plugins:{
+        legend:{position:'right', labels:{boxWidth:10, padding:10}},
+        tooltip:{
+          ...tooltipOpts(),
+          callbacks:{ label:(ctx)=>`${ctx.label}: ${ctx.formattedValue}%` }
+        }
+      }
+    }
+  });
+}
+
+function buildSparklines() {
+  const spark = (arr) => arr.map(v=>v+Math.random()*0.5);
+  makeSparkline('spark-gdp',       spark([20,21,22,23,24,25,26,27,27.4]), '#3ecf8e');
+  makeSparkline('spark-growth',    spark([1.5,2,2.5,3,2,2.3,2.5,2.4,2.5]),'#63cab7');
+  makeSparkline('spark-inflation', spark([1.2,1.8,7,8,6,4,3.5,3.1,3.1]), '#f5a623');
+  makeSparkline('spark-unemp',     spark([6,5.5,5,4.5,4.2,4,3.9,3.9,3.9]),'#7b8ef8');
+  makeSparkline('spark-trade',     spark([900,850,800,780,760,780,773,773,773]),'#e05c5c');
+}
+
+/* ════════════════════════════════════════════════════════
+   PAGE: GDP
+════════════════════════════════════════════════════════ */
+function buildGDPPage() {
+  buildGrowthChart('growth');
+  buildRollingChart();
+  buildPerCapitaChart();
+  buildRankingsTable();
+}
+
+function buildGrowthChart(metric='growth') {
+  const ctx = document.getElementById('growth-chart');
+  if (!ctx) return;
+  if (STATE.charts['growth']) STATE.charts['growth'].destroy();
+
+  const countries = Object.values(MOCK.gdpTrend).slice(0,6);
+  const datasets  = countries.map((c,i) => ({
+    label: c.emoji + ' ' + c.code,
+    data:  metric==='growth' ? c.growth : c.gdp,
+    borderColor: PALETTE[i],
+    backgroundColor: PALETTE[i]+'22',
+    borderWidth:2, tension:.4, pointRadius:3,
+    fill: i===0 && metric==='gdp',
+  }));
+
+  STATE.charts['growth'] = new Chart(ctx, {
+    type:'line',
+    data:{ labels: MOCK.gdpTrend['USA'].years, datasets },
+    options:{
+      responsive:true, interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom', labels:{boxWidth:10,padding:16}}, tooltip:tooltipOpts()},
+      scales:{
+        x:{grid:gridOpts()},
+        y:{grid:gridOpts(), ticks:{callback: v => metric==='growth'?`${v}%`:`$${v}T`}}
+      }
+    }
+  });
+}
+
+function buildRollingChart() {
+  const ctx = document.getElementById('rolling-chart');
+  if (!ctx) return;
+  if (STATE.charts['rolling']) STATE.charts['rolling'].destroy();
+
+  const c = MOCK.gdpTrend['USA'];
+  const rolling = c.growth.map((v,i,arr) => {
+    const window = arr.slice(Math.max(0,i-4), i+1);
+    return +(window.reduce((a,b)=>a+b,0)/window.length).toFixed(2);
+  });
+
+  STATE.charts['rolling'] = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: c.years,
+      datasets:[
+        {label:'Annual Growth', data:c.growth, borderColor:PALETTE[0]+'88', borderWidth:1, pointRadius:2, tension:.3},
+        {label:'5yr Rolling Avg', data:rolling, borderColor:PALETTE[0], borderWidth:2.5, pointRadius:0, tension:.4},
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:12}}, tooltip:tooltipOpts()},
+      scales:{x:{grid:gridOpts()}, y:{grid:gridOpts(), ticks:{callback:v=>`${v}%`}}}
+    }
+  });
+}
+
+function buildPerCapitaChart() {
+  const ctx = document.getElementById('percapita-chart');
+  if (!ctx) return;
+  if (STATE.charts['percapita']) STATE.charts['percapita'].destroy();
+
+  const pops = {USA:335,CHN:1410,IND:1430,DEU:84,GBR:67,JPN:125,FRA:68,BRA:215,CAN:38,AUS:26};
+  const gpc  = MOCK.countryMap.map(c=>({
+    code:c.code, name:c.name,
+    gpc: +(c.gdp / (pops[c.code]||100) * 1000).toFixed(0)
+  })).sort((a,b)=>b.gpc-a.gpc).slice(0,10);
+
+  STATE.charts['percapita'] = new Chart(ctx, {
+    type:'bar', indexAxis:'y',
+    data:{
+      labels: gpc.map(c=>`${FLAGS[c.code]||''} ${c.code}`),
+      datasets:[{
+        data: gpc.map(c=>c.gpc),
+        backgroundColor: PALETTE.slice(0,10).map(c=>c+'cc'),
+        borderRadius:4, borderSkipped:false,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}, tooltip:tooltipOpts()},
+      scales:{x:{grid:gridOpts(), ticks:{callback:v=>`$${(v/1000).toFixed(0)}k`}}, y:{grid:{display:false}}}
+    }
+  });
+}
+
+function buildRankingsTable() {
+  const tbody = document.getElementById('rankings-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  MOCK.countryMap
+    .sort((a,b)=>b.gdp-a.gdp)
+    .forEach((c,i) => {
+      const rank = i+1;
+      const rankClass = rank===1?'gold':rank===2?'silver':rank===3?'bronze':'';
+      const growthPos = c.gdp_growth > 0;
+      tbody.innerHTML += `
+        <tr>
+          <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+          <td><span class="table-flag">${FLAGS[c.code]||''}</span>${c.name}</td>
+          <td><span class="badge badge-blue">${c.region}</span></td>
+          <td style="font-family:var(--font-mono)">$${(c.gdp/1000).toFixed(2)}T</td>
+          <td><span class="badge ${growthPos?'badge-green':'badge-red'}">${growthPos?'▲':'▼'} ${c.gdp_growth}%</span></td>
+          <td style="font-family:var(--font-mono)">${c.inflation}%</td>
+          <td style="font-family:var(--font-mono)">${c.unemployment}%</td>
+          <td><span class="badge ${c.gdp_growth>3?'badge-green':c.gdp_growth>1?'badge-amber':'badge-red'}">${c.gdp_growth>3?'Strong':c.gdp_growth>1?'Moderate':'Slow'}</span></td>
+        </tr>`;
+    });
+}
+
+/* ════════════════════════════════════════════════════════
+   PAGE: MARKETS — SECTOR HEATMAP
+════════════════════════════════════════════════════════ */
+function buildMarketsPage() {
+  buildHeatmap();
+  buildSectorBar();
+  buildSectorLine();
+}
+
+function buildHeatmap() {
+  const container = document.getElementById('heatmap-container');
+  if (!container) return;
+
+  const sectors = MOCK.sectors;
+  const quarters = ['Q1','Q2','Q3','Q4'];
+  const years    = ['2020','2021','2022','2023','2024'];
+
+  let html = '<div class="heatmap-labels" style="margin-left:100px">';
+  years.forEach(y=> quarters.forEach(q=> html+=`<div style="flex:1;text-align:center">${y}<br>${q}</div>`));
+  html += '</div>';
+
+  sectors.forEach(s => {
+    const data = MOCK.sectorData[s];
+    html += `<div style="display:flex;align-items:center;gap:2px;margin-bottom:2px">`;
+    html += `<div style="width:96px;font-size:10px;font-family:var(--font-mono);color:var(--text2);flex-shrink:0;text-align:right;padding-right:8px">${s.length>18?s.slice(0,16)+'…':s}</div>`;
+    data.quarterly.forEach(cell => {
+      const v = cell.return;
+      const abs = Math.min(Math.abs(v)/15, 1);
+      const bg  = v>0 ? `rgba(62,207,142,${.15+abs*.7})` : `rgba(224,92,92,${.15+abs*.7})`;
+      const fg  = v>0 ? '#3ecf8e' : '#e05c5c';
+      html += `<div class="heatmap-cell" style="flex:1;background:${bg}"
+                    title="${s} ${cell.year}Q${cell.quarter}: ${v>0?'+':''}${v}%">
+                 <span style="color:${fg};font-size:10px;font-weight:700">${v>0?'+':''}${v}</span>
+               </div>`;
+    });
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function buildSectorBar() {
+  const ctx = document.getElementById('sector-bar');
+  if (!ctx) return;
+  if (STATE.charts['sectorBar']) STATE.charts['sectorBar'].destroy();
+
+  const avgs = MOCK.sectors.map(s => {
+    const vals = MOCK.sectorData[s].quarterly.map(q=>q.return);
+    return { sector:s.length>20?s.slice(0,18)+'…':s, avg: +(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2) };
+  }).sort((a,b)=>b.avg-a.avg);
+
+  STATE.charts['sectorBar'] = new Chart(ctx, {
+    type:'bar', indexAxis:'y',
+    data:{
+      labels: avgs.map(s=>s.sector),
+      datasets:[{
+        data: avgs.map(s=>s.avg),
+        backgroundColor: avgs.map(s=>s.avg>0?'rgba(62,207,142,.7)':'rgba(224,92,92,.7)'),
+        borderRadius:4, borderSkipped:false,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:tooltipOpts()},
+      scales:{x:{grid:gridOpts(), ticks:{callback:v=>`${v}%`}}, y:{grid:{display:false}}}
+    }
+  });
+}
+
+function buildSectorLine() {
+  const ctx = document.getElementById('sector-line');
+  if (!ctx) return;
+  if (STATE.charts['sectorLine']) STATE.charts['sectorLine'].destroy();
+
+  const topSectors = MOCK.sectors.slice(0,5);
+  const labels     = ['2020 Q1','2020 Q2','2020 Q3','2020 Q4','2021 Q1','2021 Q2','2021 Q3','2021 Q4',
+                       '2022 Q1','2022 Q2','2022 Q3','2022 Q4','2023 Q1','2023 Q2','2023 Q3','2023 Q4',
+                       '2024 Q1','2024 Q2','2024 Q3','2024 Q4'];
+
+  const datasets = topSectors.map((s,i)=>({
+    label: s.length>20?s.slice(0,18)+'…':s,
+    data: MOCK.sectorData[s].quarterly.map(q=>q.return),
+    borderColor: PALETTE[i],
+    backgroundColor: 'transparent',
+    borderWidth:2, tension:.4, pointRadius:2,
+  }));
+
+  STATE.charts['sectorLine'] = new Chart(ctx, {
+    type:'line',
+    data:{labels, datasets},
+    options:{
+      responsive:true, interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:12}}, tooltip:tooltipOpts()},
+      scales:{
+        x:{grid:gridOpts(.04), ticks:{maxTicksLimit:8}},
+        y:{grid:gridOpts(), ticks:{callback:v=>`${v}%`}}
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════════════════════
+   PAGE: TRADE
+════════════════════════════════════════════════════════ */
+function buildTradePage() {
+  const tradeData = [
+    {exporter:'China',importer:'USA',sector:'Technology',export_bn:536.8,import_bn:427.2,growth:-4.2},
+    {exporter:'USA',importer:'China',sector:'Energy',export_bn:153.2,import_bn:148.5,growth:8.3},
+    {exporter:'Germany',importer:'USA',sector:'Industrials',export_bn:112.3,import_bn:98.7,growth:2.1},
+    {exporter:'Japan',importer:'USA',sector:'Auto',export_bn:142.6,import_bn:125.3,growth:-1.8},
+    {exporter:'South Korea',importer:'USA',sector:'Technology',export_bn:103.4,import_bn:89.2,growth:5.6},
+    {exporter:'Canada',importer:'USA',sector:'Energy',export_bn:97.8,import_bn:82.3,growth:3.2},
+    {exporter:'Mexico',importer:'USA',sector:'Manufacturing',export_bn:88.4,import_bn:74.6,growth:6.1},
+  ];
+
+  // Trade bar
+  const barCtx = document.getElementById('trade-bar');
+  if (barCtx) {
+    if (STATE.charts['tradeBar']) STATE.charts['tradeBar'].destroy();
+    STATE.charts['tradeBar'] = new Chart(barCtx, {
+      type:'bar',
+      data:{
+        labels: tradeData.map(d=>d.exporter),
+        datasets:[
+          {label:'Exports',data:tradeData.map(d=>d.export_bn),backgroundColor:'rgba(99,202,183,.8)',borderRadius:4},
+          {label:'Imports',data:tradeData.map(d=>d.import_bn),backgroundColor:'rgba(123,142,248,.8)',borderRadius:4},
+        ]
+      },
+      options:{
+        responsive:true, interaction:{mode:'index',intersect:false},
+        plugins:{legend:{position:'bottom',labels:{boxWidth:10}}, tooltip:tooltipOpts()},
+        scales:{
+          x:{grid:{display:false}},
+          y:{grid:gridOpts(), ticks:{callback:v=>`$${v}B`}}
+        }
+      }
+    });
+  }
+
+  // Sector donut
+  const donutCtx = document.getElementById('trade-sector-donut');
+  if (donutCtx) {
+    if (STATE.charts['tradeSector']) STATE.charts['tradeSector'].destroy();
+    const sectors = ['Technology','Energy','Industrials','Auto','Manufacturing','Agriculture','Services'];
+    const vals    = [28,22,17,14,10,5,4];
+    STATE.charts['tradeSector'] = new Chart(donutCtx, {
+      type:'doughnut',
+      data:{
+        labels:sectors,
+        datasets:[{data:vals,backgroundColor:PALETTE,borderColor:'rgba(0,0,0,.2)',borderWidth:2,hoverOffset:6}]
+      },
+      options:{
+        responsive:true, cutout:'60%',
+        plugins:{legend:{position:'right',labels:{boxWidth:10,padding:8}}, tooltip:tooltipOpts()}
+      }
+    });
+  }
+
+  // Compare
+  const cmpCtx = document.getElementById('trade-compare');
+  if (cmpCtx) {
+    if (STATE.charts['tradeCmp']) STATE.charts['tradeCmp'].destroy();
+    STATE.charts['tradeCmp'] = new Chart(cmpCtx, {
+      type:'bar',
+      data:{
+        labels: tradeData.map(d=>d.exporter),
+        datasets:[
+          {label:'Trade Balance',data:tradeData.map(d=>+(d.export_bn-d.import_bn).toFixed(1)),
+           backgroundColor:tradeData.map(d=>(d.export_bn-d.import_bn)>0?'rgba(62,207,142,.8)':'rgba(224,92,92,.8)'),
+           borderRadius:4, borderSkipped:false}
+        ]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{display:false}, tooltip:tooltipOpts()},
+        scales:{x:{grid:{display:false}}, y:{grid:gridOpts(), ticks:{callback:v=>`$${v}B`}}}
+      }
+    });
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   PAGE: MAP — Google Maps
+════════════════════════════════════════════════════════ */
+function initMap() {
+  if (typeof google === 'undefined') {
+    buildFallbackMap();
+    return;
+  }
+  const mapEl = document.getElementById('map');
+  STATE.map = new google.maps.Map(mapEl, {
+    zoom: 2,
+    center: {lat:20, lng:10},
+    mapTypeId:'roadmap',
+    styles: darkMapStyle(),
+    disableDefaultUI: false,
+    zoomControl: true,
+    scaleControl: true,
+  });
+  plotMapMarkers();
+}
+
+function plotMapMarkers() {
+  if (!STATE.map) return;
+  STATE.markers.forEach(m => m.setMap(null));
+  STATE.markers = [];
+
+  const metric = STATE.mapMetric;
+  const values = MOCK.countryMap.map(c => c[metric]);
+  const maxVal = Math.max(...values);
+
+  MOCK.countryMap.forEach(c => {
+    const val = c[metric];
+    const size = Math.max(10, (val / maxVal) * 40);
+    const color = val > (maxVal*.6) ? '#63cab7' : val > (maxVal*.3) ? '#f5a623' : '#e05c5c';
+
+    const marker = new google.maps.Marker({
+      position: {lat:c.lat, lng:c.lng},
+      map: STATE.map,
+      title: c.name,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: color,
+        fillOpacity: 0.75,
+        strokeColor: color,
+        strokeWeight: 1.5,
+        scale: size/4,
+      }
+    });
+
+    const infoWindow = new google.maps.InfoWindow({
+      content:`<div style="background:#0d1320;color:#e8edf5;padding:12px;border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;min-width:180px">
+        <div style="font-weight:700;font-size:14px;margin-bottom:8px">${FLAGS[c.code]||''} ${c.name}</div>
+        <div>GDP: <span style="color:#63cab7">$${(c.gdp/1000).toFixed(2)}T</span></div>
+        <div>Growth: <span style="color:${c.gdp_growth>2?'#3ecf8e':'#f5a623'}">${c.gdp_growth}%</span></div>
+        <div>Inflation: <span style="color:#f5a623">${c.inflation}%</span></div>
+        <div>Unemployment: <span style="color:#7b8ef8">${c.unemployment}%</span></div>
+      </div>`
+    });
+
+    marker.addListener('click', () => {
+      infoWindow.open(STATE.map, marker);
+      showCountryPanel(c);
+    });
+
+    STATE.markers.push(marker);
+  });
+}
+
+function buildFallbackMap() {
+  const mapEl = document.getElementById('map');
+  mapEl.style.cssText = 'display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:var(--bg2);border-radius:12px;color:var(--text2)';
+  mapEl.innerHTML = `
+    <div style="font-size:48px">🗺️</div>
+    <div style="font-family:var(--font-head);font-size:18px;color:var(--text)">Google Maps Integration</div>
+    <div style="font-size:13px;text-align:center;max-width:400px">Add your Google Maps API key to <code style="color:var(--accent)">.env</code> as <code style="color:var(--accent)">GOOGLE_MAPS_API_KEY</code> and rebuild the Shiny app. The map renders 15 economic markers with clickable country detail cards.</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">
+      ${MOCK.countryMap.map(c=>`
+        <div onclick="showCountryPanel(${JSON.stringify(c).replace(/"/g,"'")})"
+             style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center;cursor:pointer;transition:all .2s"
+             onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:18px">${FLAGS[c.code]||'🌐'}</div>
+          <div style="font-size:10px;font-family:var(--font-mono);color:var(--text2);margin-top:2px">${c.code}</div>
+          <div style="font-size:11px;color:var(--accent);font-weight:700">$${(c.gdp/1000).toFixed(1)}T</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function showCountryPanel(c) {
+  if (typeof c === 'string') c = JSON.parse(c.replace(/'/g,'"'));
+  const panel = document.getElementById('map-info-panel');
+  const title = document.getElementById('map-country-title');
+  const detail= document.getElementById('map-country-detail');
+  panel.style.display = 'block';
+  title.textContent = `${FLAGS[c.code]||''} ${c.name} — Economic Profile`;
+  const gPos = c.gdp_growth >= 0;
+  detail.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+      <div class="kpi-card" data-color="green" style="padding:14px">
+        <div class="kpi-label">GDP</div>
+        <div class="kpi-value" style="font-size:20px">$${(c.gdp/1000).toFixed(2)}<span class="kpi-unit">T</span></div>
+      </div>
+      <div class="kpi-card" data-color="teal" style="padding:14px">
+        <div class="kpi-label">Growth</div>
+        <div class="kpi-value" style="font-size:20px;color:${gPos?'var(--green)':'var(--red)'}">${gPos?'+':''}${c.gdp_growth}<span class="kpi-unit">%</span></div>
+      </div>
+      <div class="kpi-card" data-color="amber" style="padding:14px">
+        <div class="kpi-label">Inflation</div>
+        <div class="kpi-value" style="font-size:20px">${c.inflation}<span class="kpi-unit">%</span></div>
+      </div>
+      <div class="kpi-card" data-color="blue" style="padding:14px">
+        <div class="kpi-label">Unemployment</div>
+        <div class="kpi-value" style="font-size:20px">${c.unemployment}<span class="kpi-unit">%</span></div>
+      </div>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">
+      Region: <span style="color:var(--text)">${c.region}</span> &nbsp;|&nbsp;
+      Code: <span style="color:var(--accent)">${c.code}</span> &nbsp;|&nbsp;
+      Data Source: <span style="color:var(--text)">World Bank 2024</span>
+    </div>`;
+}
+
+/* ════════════════════════════════════════════════════════
+   PAGE: COMPARE
+════════════════════════════════════════════════════════ */
+function buildComparePage() {
+  updateCompare();
+}
+
+function updateCompare() {
+  const codeA = document.getElementById('cmp-a')?.value || 'IND';
+  const codeB = document.getElementById('cmp-b')?.value || 'CHN';
+  const a     = MOCK.countryMap.find(c=>c.code===codeA) || MOCK.countryMap[2];
+  const b     = MOCK.countryMap.find(c=>c.code===codeB) || MOCK.countryMap[1];
+
+  // Radar
+  const radarCtx = document.getElementById('compare-radar');
+  if (radarCtx) {
+    if (STATE.charts['cmpRadar']) STATE.charts['cmpRadar'].destroy();
+    const labels = ['GDP Size','Growth','Stability','Employment','Trade Openness','Innovation'];
+    const normalize = (c) => [
+      Math.min(100, c.gdp/300),
+      Math.min(100, (c.gdp_growth+2)*12),
+      Math.max(0, 100-c.inflation*8),
+      Math.max(0, 100-c.unemployment*2),
+      40+Math.random()*40,
+      40+Math.random()*40,
+    ].map(v=>+v.toFixed(1));
+
+    STATE.charts['cmpRadar'] = new Chart(radarCtx, {
+      type:'radar',
+      data:{
+        labels,
+        datasets:[
+          {label:`${FLAGS[a.code]||''} ${a.code}`, data:normalize(a), borderColor:PALETTE[0], backgroundColor:PALETTE[0]+'33', borderWidth:2},
+          {label:`${FLAGS[b.code]||''} ${b.code}`, data:normalize(b), borderColor:PALETTE[1], backgroundColor:PALETTE[1]+'33', borderWidth:2},
+        ]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{position:'bottom',labels:{boxWidth:10}}, tooltip:tooltipOpts()},
+        scales:{r:{grid:{color:'rgba(255,255,255,.08)'}, pointLabels:{color:'#8899b4',font:{size:10}},
+                    ticks:{display:false}, angleLines:{color:'rgba(255,255,255,.05)'}}}
+      }
+    });
+  }
+
+  // KPI comparison
+  const kpiEl = document.getElementById('compare-kpis');
+  if (kpiEl) {
+    const indicators = [
+      {label:'GDP',key:'gdp',unit:'B',fmt:v=>`$${v}B`},
+      {label:'GDP Growth',key:'gdp_growth',unit:'%',fmt:v=>`${v}%`},
+      {label:'Inflation',key:'inflation',unit:'%',fmt:v=>`${v}%`},
+      {label:'Unemployment',key:'unemployment',unit:'%',fmt:v=>`${v}%`},
+    ];
+    kpiEl.innerHTML = indicators.map(ind => {
+      const va = a[ind.key], vb = b[ind.key];
+      const winner = (ind.key==='unemployment'||ind.key==='inflation') ? (va<vb?'a':'b') : (va>vb?'a':'b');
+      return `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="flex:1;text-align:right">
+            <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${winner==='a'?'var(--green)':'var(--text)'}">${ind.fmt(va)}</div>
+            <div style="font-size:10px;color:var(--text2)">${FLAGS[a.code]||''} ${a.code}</div>
+          </div>
+          <div style="text-align:center;font-size:10px;font-family:var(--font-mono);color:var(--text3);width:80px">${ind.label}</div>
+          <div style="flex:1">
+            <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${winner==='b'?'var(--green)':'var(--text)'}">${ind.fmt(vb)}</div>
+            <div style="font-size:10px;color:var(--text2)">${FLAGS[b.code]||''} ${b.code}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Compare GDP chart
+  const cmpCtx = document.getElementById('compare-gdp');
+  if (cmpCtx) {
+    if (STATE.charts['cmpGDP']) STATE.charts['cmpGDP'].destroy();
+    const da = MOCK.gdpTrend[codeA];
+    const db = MOCK.gdpTrend[codeB];
+    STATE.charts['cmpGDP'] = new Chart(cmpCtx, {
+      type:'line',
+      data:{
+        labels: MOCK.gdpTrend['USA'].years,
+        datasets:[
+          {label:`${FLAGS[codeA]||''} ${da?.name||codeA}`, data:da?.gdp||[], borderColor:PALETTE[0], backgroundColor:PALETTE[0]+'22', fill:true, borderWidth:2, tension:.4},
+          {label:`${FLAGS[codeB]||''} ${db?.name||codeB}`, data:db?.gdp||[], borderColor:PALETTE[1], backgroundColor:PALETTE[1]+'22', fill:true, borderWidth:2, tension:.4},
+        ]
+      },
+      options:{
+        responsive:true, interaction:{mode:'index',intersect:false},
+        plugins:{legend:{position:'bottom',labels:{boxWidth:10}}, tooltip:tooltipOpts()},
+        scales:{x:{grid:gridOpts()}, y:{grid:gridOpts(), ticks:{callback:v=>`$${v}T`}}}
+      }
+    });
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   PAGE: PIPELINE
+════════════════════════════════════════════════════════ */
+function buildPipelinePage() {
+  buildPipelineRuns();
+  buildPipelineChart();
+}
+
+function buildPipelineRuns() {
+  const tbody = document.getElementById('pipeline-runs');
+  if (!tbody) return;
+  const runs = [
+    {id:'run_20240413_020031', started:'2024-04-13 02:00', records:14280, status:'success', dur:'4m 12s'},
+    {id:'run_20240412_020028', started:'2024-04-12 02:00', records:14260, status:'success', dur:'4m 08s'},
+    {id:'run_20240411_020035', started:'2024-04-11 02:00', records:12340, status:'success', dur:'3m 55s'},
+    {id:'run_20240410_020142', started:'2024-04-10 02:01', records:0,     status:'failed',  dur:'1m 02s'},
+    {id:'run_20240409_020029', started:'2024-04-09 02:00', records:14180, status:'success', dur:'4m 21s'},
+  ];
+  tbody.innerHTML = runs.map(r=>`
+    <tr>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">${r.id}</td>
+      <td>${r.started} UTC</td>
+      <td style="font-family:var(--font-mono)">${r.records.toLocaleString()}</td>
+      <td><span class="badge ${r.status==='success'?'badge-green':'badge-red'}">${r.status==='success'?'✓ SUCCESS':'✗ FAILED'}</span></td>
+      <td style="font-family:var(--font-mono)">${r.dur}</td>
+    </tr>`).join('');
+}
+
+function buildPipelineChart() {
+  const ctx = document.getElementById('pipeline-chart');
+  if (!ctx) return;
+  if (STATE.charts['pipeline']) STATE.charts['pipeline'].destroy();
+  const labels = Array.from({length:30},(_,i)=>`Apr ${i+1}`);
+  const data   = labels.map(()=>12000+Math.floor(Math.random()*3000));
+  STATE.charts['pipeline'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Records Processed',
+        data,
+        backgroundColor:'rgba(99,202,183,.6)',
+        borderRadius:3,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}, tooltip:tooltipOpts()},
+      scales:{
+        x:{grid:{display:false}, ticks:{maxTicksLimit:10}},
+        y:{grid:gridOpts(), ticks:{callback:v=>`${(v/1000).toFixed(0)}k`}}
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════════════════ */
+const PAGE_BUILDERS = {
+  overview: buildOverviewCharts,
+  gdp:      buildGDPPage,
+  markets:  buildMarketsPage,
+  trade:    buildTradePage,
+  map:      () => { if (!STATE.mapBuilt) { initMap(); STATE.mapBuilt=true; } },
+  compare:  buildComparePage,
+  pipeline: buildPipelinePage,
+};
+
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(`page-${page}`)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if (n.getAttribute('onclick')?.includes(`'${page}'`)) n.classList.add('active');
+  });
+  STATE.currentPage = page;
+  if (PAGE_BUILDERS[page]) PAGE_BUILDERS[page]();
+}
+
+/* ════════════════════════════════════════════════════════
+   CONTROLS
+════════════════════════════════════════════════════════ */
+function switchGDPView(type, el) {
+  document.querySelectorAll('#page-overview .chart-tabs .chart-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  buildGDPChart(type);
+}
+
+function switchGrowthMetric(metric, el) {
+  document.querySelectorAll('#page-gdp .chart-tabs .chart-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  buildGrowthChart(metric);
+}
+
+function onCountryChange() {
+  STATE.focusCountry = document.getElementById('focus-country').value;
+}
+
+function onYearChange(val) {
+  STATE.yearFrom = parseInt(val);
+  document.getElementById('year-label').textContent = val;
+}
+
+function updateMapMetric() {
+  STATE.mapMetric = document.getElementById('map-metric').value;
+  if (STATE.map) plotMapMarkers();
+}
+
+function exportData() {
+  const data = MOCK.countryMap.map(c =>
+    `${c.code},${c.name},${c.gdp},${c.gdp_growth},${c.inflation},${c.unemployment}`
+  ).join('\n');
+  const blob  = new Blob([`code,country,gdp_billion,gdp_growth_pct,inflation_pct,unemployment_pct\n${data}`], {type:'text/csv'});
+  const a     = document.createElement('a');
+  a.href      = URL.createObjectURL(blob);
+  a.download  = 'econpulse_data.csv';
+  a.click();
+}
+
+function refreshNow() {
+  document.getElementById('last-refresh').textContent = new Date().toTimeString().slice(0,8);
+  const btn = document.querySelector('.btn-accent');
+  btn.textContent = '✓ Refreshed';
+  btn.style.background = 'var(--green)';
+  setTimeout(() => { btn.textContent='↻ Refresh'; btn.style.background='var(--accent)'; }, 1500);
+}
+
+function triggerPipeline() {
+  const steps = document.querySelectorAll('.p-step');
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i > 0) steps[i-1]?.classList.replace('active','done');
+    if (i < steps.length) {
+      steps[i]?.classList.replace('wait','active');
+      i++;
+    } else {
+      clearInterval(interval);
+    }
+  }, 800);
+}
+
+/* ════════════════════════════════════════════════════════
+   GOOGLE MAPS DARK STYLE
+════════════════════════════════════════════════════════ */
+function darkMapStyle() {
+  return [
+    {elementType:'geometry',stylers:[{color:'#0d1320'}]},
+    {elementType:'labels.text.fill',stylers:[{color:'#8899b4'}]},
+    {elementType:'labels.text.stroke',stylers:[{color:'#080c14'}]},
+    {featureType:'administrative',elementType:'geometry.stroke',stylers:[{color:'#1a2236'}]},
+    {featureType:'administrative.land_parcel',elementType:'labels',stylers:[{visibility:'off'}]},
+    {featureType:'poi',stylers:[{visibility:'off'}]},
+    {featureType:'road',elementType:'geometry',stylers:[{color:'#1a2236'}]},
+    {featureType:'road.arterial',elementType:'labels',stylers:[{visibility:'off'}]},
+    {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#222c42'}]},
+    {featureType:'road.local',stylers:[{visibility:'off'}]},
+    {featureType:'transit',stylers:[{visibility:'off'}]},
+    {featureType:'water',elementType:'geometry',stylers:[{color:'#060d1a'}]},
+  ];
+}
+
+/* ════════════════════════════════════════════════════════
+   SHINY INTEGRATION (Websocket handlers)
+════════════════════════════════════════════════════════ */
+if (typeof Shiny !== 'undefined') {
+  Shiny.addCustomMessageHandler('update_kpis', (data) => {
+    if (data.gdp?.value)         document.getElementById('kpi-gdp').innerHTML = `$${(data.gdp.value/1000).toFixed(1)}<span class="kpi-unit">T</span>`;
+    if (data.inflation?.value)   document.getElementById('kpi-inflation').innerHTML = `${data.inflation.value.toFixed(1)}<span class="kpi-unit">%</span>`;
+    if (data.unemployment?.value)document.getElementById('kpi-unemployment').innerHTML = `${data.unemployment.value.toFixed(1)}<span class="kpi-unit">%</span>`;
+    if (!data.is_mock) {
+      document.getElementById('data-mode').textContent = 'LIVE';
+      document.getElementById('data-mode').style.color = 'var(--green)';
+      document.getElementById('demo-banner').style.display = 'none';
+    }
+  });
+  Shiny.addCustomMessageHandler('update_ts', (data) => {
+    document.getElementById('last-refresh').textContent = data.ts;
+  });
+}
+
+/* ════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  buildOverviewCharts();
+  document.getElementById('last-refresh').textContent = new Date().toTimeString().slice(0,8);
+
+  // Auto-refresh display timestamp
+  setInterval(() => {
+    document.getElementById('last-refresh').textContent = new Date().toTimeString().slice(0,8);
+  }, 30000);
+});
+
+/* Load Google Maps if key present */
+window.initGoogleMap = initMap;
+const GMAPS = typeof GMAPS_KEY !== 'undefined' && GMAPS_KEY;
+if (GMAPS) {
+  const s = document.createElement('script');
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${GMAPS_KEY}&callback=initGoogleMap`;
+  s.async = true; s.defer = true;
+  document.head.appendChild(s);
+}
+</script>
+</body>
+</html>
