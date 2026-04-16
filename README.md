@@ -149,6 +149,24 @@ aws lambda create-function \
 
 ---
 
+## 📸 Dashboard Screenshots
+
+<p align="center">
+  <img src="screenshots/1.png" width="950">
+</p>
+
+<p align="center">
+  <img src="screenshots/2.png" width="470">
+  <img src="screenshots/3.png" width="470">
+</p>
+
+<p align="center">
+  <img src="screenshots/4.png" width="950">
+</p>
+
+---
+---
+
 ## 📊 Data Sources
 
 | Source | Type | Refresh Rate |
