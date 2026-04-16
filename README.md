@@ -220,9 +220,9 @@ WORLD_BANK_API_KEY=optional
 
 ## 👤 Author
 
-**Your Name**  
-Data Engineer & Analytics Developer  
-[LinkedIn](https://linkedin.com) · [GitHub](https://github.com)
+**Zaheer**  
+Software Engineer & Data Engineer & Analytics Developer  
+[LinkedIn](https://www.linkedin.com/in/zaheershaik2/) · [GitHub](https://github.com/ShaikZaheer-developer)
 
 ---
 
